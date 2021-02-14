@@ -65,7 +65,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
      * @return Whether or not the transfer succeeded
      */
     function transferTokens(address spender, address src, address dst, uint tokens) internal returns (uint) {
-        require(dst != address(0), "Zero address")；
+        require(dst != address(0), "Zero address");
         require(src != dst, "Self transfer not allowed");
 
         /* Fail if transfer not allowed */
