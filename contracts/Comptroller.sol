@@ -110,6 +110,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      */
     function enterMarkets(address[] memory gTokens) public returns (uint[] memory) {
         uint len = gTokens.length;
+        require(len <= 100, "Too many");
 
         uint[] memory results = new uint[](len);
         for (uint i = 0; i < len; i++) {
@@ -950,6 +951,7 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
       */
     function _setMarketBorrowCaps(GToken[] calldata gTokens, uint[] calldata newBorrowCaps) external {
     	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps"); 
+        require(gTokens.length <= 100, "Too many gTokens");
 
         uint numMarkets = gTokens.length;
         uint numBorrowCaps = newBorrowCaps.length;
@@ -1226,6 +1228,9 @@ contract Comptroller is ComptrollerV5Storage, ComptrollerInterface, ComptrollerE
      * @param suppliers Whether or not to claim GOF earned by supplying
      */
     function claimGof(address[] memory holders, GToken[] memory gTokens, bool borrowers, bool suppliers) public {
+        require(gTokens.length <= 100, "Too many gTokens");
+        require(holders.length <= 100, "Too many holders");
+
         for (uint i = 0; i < gTokens.length; i++) {
             GToken gToken = gTokens[i];
             require(markets[address(gToken)].isListed, "market must be listed");

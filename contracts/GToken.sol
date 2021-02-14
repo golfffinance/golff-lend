@@ -65,16 +65,12 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
      * @return Whether or not the transfer succeeded
      */
     function transferTokens(address spender, address src, address dst, uint tokens) internal returns (uint) {
+        require(dst != address(0), "Zero address")；
+        require(src != dst, "Self transfer not allowed");
+
         /* Fail if transfer not allowed */
         uint allowed = comptroller.transferAllowed(address(this), src, dst, tokens);
-        if (allowed != 0) {
-            return failOpaque(Error.COMPTROLLER_REJECTION, FailureInfo.TRANSFER_COMPTROLLER_REJECTION, allowed);
-        }
-
-        /* Do not allow self-transfers */
-        if (src == dst) {
-            return fail(Error.BAD_INPUT, FailureInfo.TRANSFER_NOT_ALLOWED);
-        }
+        require(allowed == 0, "COMPTROLLER_REJECTION");
 
         /* Get the allowance, infinite for the account owner */
         uint startingAllowance = 0;
@@ -91,19 +87,13 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
         uint dstTokensNew;
 
         (mathErr, allowanceNew) = subUInt(startingAllowance, tokens);
-        if (mathErr != MathError.NO_ERROR) {
-            return fail(Error.MATH_ERROR, FailureInfo.TRANSFER_NOT_ALLOWED);
-        }
+        require(mathErr == MathError.NO_ERROR, "TRANSFER_NOT_ALLOWED");
 
         (mathErr, srcTokensNew) = subUInt(accountTokens[src], tokens);
-        if (mathErr != MathError.NO_ERROR) {
-            return fail(Error.MATH_ERROR, FailureInfo.TRANSFER_NOT_ENOUGH);
-        }
+        require(mathErr == MathError.NO_ERROR, "TRANSFER_NOT_ENOUGH");
 
         (mathErr, dstTokensNew) = addUInt(accountTokens[dst], tokens);
-        if (mathErr != MathError.NO_ERROR) {
-            return fail(Error.MATH_ERROR, FailureInfo.TRANSFER_TOO_MUCH);
-        }
+        require(mathErr == MathError.NO_ERROR, "TRANSFER_TOO_MUCH");
 
         /////////////////////////
         // EFFECTS & INTERACTIONS
